@@ -39,11 +39,80 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-const express = require('express');
-const bodyParser = require('body-parser');
-
+const express = require("express");
+const bodyParser = require("body-parser");
+const port = 3000;
 const app = express();
 
 app.use(bodyParser.json());
 
-module.exports = app;
+let todos = [];
+
+app.get("/todos", (req, res) => {
+  res.json(todos);
+});
+
+app.post("/todos", (req, res) => {
+  const uniqueId = Date.now();
+  todos.push({
+    id: uniqueId,
+    title: req.body.title,
+    // completed: req.body.completed,
+    description: req.body.description,
+  });
+  res.status(201).json({ Id: uniqueId });
+});
+
+app.get("/todos/:id", (req, res) => {
+  const reqId = parseInt(req.params.id);
+  let found = false;
+
+  todos.forEach((element) => {
+    if (reqId == element.id) {
+      res.status(200).json(element);
+      found = true;
+    }
+  });
+
+  if (!found) {
+    res.sendStatus(404);
+  }
+});
+
+app.put("/todos/:id", (req, res) => {
+  const reqId = parseInt(req.params.id);
+  let found = false;
+
+  todos.forEach((element) => {
+    if (reqId == element.id) {
+      element.title = req.body.title;
+      element.completed = req.body.completed;
+      found = true;
+      res.sendStatus(200);
+    }
+  });
+
+  if (!found) {
+    res.sendStatus(404);
+  }
+});
+
+app.delete("/todos/:id", (req, res) => {
+  const reqId = parseInt(req.params.id);
+  let newArray = [];
+
+  todos.forEach((element) => {
+    if (reqId !== element.id) {
+      newArray.push(element);
+    }
+  });
+  if (newArray.length === todos.length) {
+    res.sendStatus(404);
+  } else {
+    todos = newArray;
+    res.sendStatus(200);
+  }
+});
+
+app.listen(port);
+// module.exports = app;

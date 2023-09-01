@@ -29,9 +29,60 @@
   Testing the server - run `npm run test-authenticationServer` command in terminal
  */
 
-const express = require("express")
+const express = require("express");
 const PORT = 3000;
+const bodyParser = require("body-parser");
 const app = express();
 // write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
 
-module.exports = app;
+app.use(bodyParser.json());
+
+let users = [];
+let userIds = [];
+
+function findUser(username) {
+  const user = users.find((e) => e.username === username);
+  return user;
+}
+
+app.post("/signup", (req, res) => {
+  if (findUser(req.body.username)) {
+    res.status(400).send("User already exists!!");
+  } else {
+    const uniqueId = Date.now();
+    var user = req.body;
+    users.push({
+      id: uniqueId,
+      username: req.body.username,
+      password: req.body.password,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    });
+    userIds.push(uniqueId);
+    res.sendStatus(201);
+  }
+});
+
+app.post("/login", (req, res) => {
+  const existingUser = findUser(req.body.username);
+  if (existingUser && existingUser.password === req.body.password) {
+    res.status(200).json({ Token: existingUser.id });
+  } else {
+    res.status(401).send("Invalid Credentials");
+  }
+});
+
+app.get("/data", (req, res) => {
+  const existingUser = findUser(req.headers.username);
+  if (existingUser && existingUser.password === req.headers.password) {
+    let userToSend = [];
+    users.forEach((e) => userToSend.push(e.id, e.firstName, e.lastName));
+
+    res.status(200).json({ users: userToSend });
+  } else {
+    res.status(401).send("Invalid Credentials");
+  }
+});
+
+app.listen(PORT);
+// module.exports = app;
