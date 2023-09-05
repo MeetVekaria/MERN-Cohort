@@ -42,9 +42,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const port = 3000;
+const path = require("path");
+const cors = require("cors");
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 let todos = [];
 
@@ -52,15 +55,25 @@ app.get("/todos", (req, res) => {
   res.json(todos);
 });
 
+// app.post("/todos", (req, res) => {
+//   const uniqueId = Date.now();
+//   todos.push({
+//     id: uniqueId,
+//     title: req.body.title,
+//     // completed: req.body.completed,
+//     description: req.body.description,
+//   });
+//   res.status(201).json({ Id: uniqueId });
+// });
+
 app.post("/todos", (req, res) => {
-  const uniqueId = Date.now();
-  todos.push({
-    id: uniqueId,
+  const newTodo = {
+    id: Math.floor(Math.random() * 1000000), // unique random id
     title: req.body.title,
-    // completed: req.body.completed,
     description: req.body.description,
-  });
-  res.status(201).json({ Id: uniqueId });
+  };
+  todos.push(newTodo);
+  res.status(201).json(newTodo);
 });
 
 app.get("/todos/:id", (req, res) => {
@@ -112,6 +125,10 @@ app.delete("/todos/:id", (req, res) => {
     todos = newArray;
     res.sendStatus(200);
   }
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 app.listen(port);
